@@ -1,39 +1,87 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ViewStyle,
+  Animated,
+} from 'react-native';
+import { theme } from '../styles/theme';
 
-type TripType = 'oneWay' | 'roundTrip';
+export type TripType = 'ONE_WAY' | 'ROUND_TRIP';
 
-interface Props {
-  selectedType: TripType;
-  onSelect: (type: TripType) => void;
+export interface TripTypeSelectorProps {
+  value: TripType;
+  onChange: (type: TripType) => void;
+  style?: ViewStyle;
+  disabled?: boolean;
 }
 
-export const TripTypeSelector: React.FC<Props> = ({ selectedType, onSelect }) => {
+const TripTypeSelector: React.FC<TripTypeSelectorProps> = ({
+  value,
+  onChange,
+  style,
+  disabled = false,
+}) => {
+  const slideAnim = React.useRef(new Animated.Value(value === 'ONE_WAY' ? 0 : 1)).current;
+
+  React.useEffect(() => {
+    Animated.timing(slideAnim, {
+      toValue: value === 'ONE_WAY' ? 0 : 1,
+      duration: theme.animation.duration.normal,
+      useNativeDriver: false,
+    }).start();
+  }, [value, slideAnim]);
+
+  const handlePress = (type: TripType) => {
+    if (!disabled && type !== value) {
+      onChange(type);
+    }
+  };
+
+  const translateX = slideAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, 150], // Adjust based on your button width
+  });
+
   return (
-    <View style={styles.container}>
-      <TouchableOpacity
+    <View style={[styles.container, style, disabled && styles.disabled]}>
+      <Animated.View
         style={[
-          styles.button,
-          selectedType === 'oneWay' && styles.selectedButton,
+          styles.selector,
+          {
+            transform: [{ translateX }],
+          },
         ]}
-        onPress={() => onSelect('oneWay')}
+      />
+      <TouchableOpacity
+        style={styles.option}
+        onPress={() => handlePress('ONE_WAY')}
+        disabled={disabled}
       >
-        <Text style={[
-          styles.buttonText,
-          selectedType === 'oneWay' && styles.selectedText,
-        ]}>One-Way</Text>
+        <Text
+          style={[
+            styles.optionText,
+            value === 'ONE_WAY' && styles.selectedText,
+          ]}
+        >
+          One Way
+        </Text>
       </TouchableOpacity>
       <TouchableOpacity
-        style={[
-          styles.button,
-          selectedType === 'roundTrip' && styles.selectedButton,
-        ]}
-        onPress={() => onSelect('roundTrip')}
+        style={styles.option}
+        onPress={() => handlePress('ROUND_TRIP')}
+        disabled={disabled}
       >
-        <Text style={[
-          styles.buttonText,
-          selectedType === 'roundTrip' && styles.selectedText,
-        ]}>Round Trip</Text>
+        <Text
+          style={[
+            styles.optionText,
+            value === 'ROUND_TRIP' && styles.selectedText,
+          ]}
+        >
+          Round Trip
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -42,26 +90,41 @@ export const TripTypeSelector: React.FC<Props> = ({ selectedType, onSelect }) =>
 const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
-    backgroundColor: '#f0f0f0',
-    borderRadius: 8,
-    padding: 4,
+    backgroundColor: theme.colors.background.paper,
+    borderRadius: theme.borderRadius.round,
+    padding: theme.spacing.xs,
+    position: 'relative',
+    height: 40,
+    ...theme.shadows.light,
   },
-  button: {
+  disabled: {
+    opacity: 0.6,
+  },
+  selector: {
+    position: 'absolute',
+    top: 4,
+    left: 4,
+    right: 4,
+    bottom: 4,
+    width: '48%',
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.round,
+  },
+  option: {
     flex: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1,
   },
-  selectedButton: {
-    backgroundColor: '#007AFF',
-  },
-  buttonText: {
-    textAlign: 'center',
-    fontSize: 16,
-    color: '#666',
+  optionText: {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.text.primary,
   },
   selectedText: {
-    color: '#fff',
-    fontWeight: '600',
+    color: theme.colors.text.inverse,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
 });
+
+export default TripTypeSelector;
