@@ -1,3 +1,13 @@
+// User Types
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  profileImage?: string;
+  rating?: number;
+}
+
 // Location Types
 export interface Location {
   id: string;
@@ -5,6 +15,7 @@ export interface Location {
   address: string;
   latitude: number;
   longitude: number;
+  placeId?: string;
 }
 
 // Car Types
@@ -16,17 +27,21 @@ export interface CarType {
   basePrice: number;
   pricePerKm: number;
   image: string;
+  features?: string[];
 }
 
 // Booking Types
+export type TripType = 'ONE_WAY' | 'ROUND_TRIP';
+
 export interface BookingRequest {
   pickupLocation: Location;
   dropLocation: Location;
   date: string;
   time: string;
   carType: string;
-  tripType: 'ONE_WAY' | 'ROUND_TRIP';
+  tripType: TripType;
   passengers: number;
+  notes?: string;
 }
 
 export interface Booking {
@@ -37,6 +52,7 @@ export interface Booking {
   date: string;
   time: string;
   carType: CarType;
+  tripType: TripType;
   status: BookingStatus;
   fare: FareDetails;
   driver?: Driver;
@@ -51,10 +67,14 @@ export interface FareDetails {
   tax: number;
   total: number;
   currency: string;
-  breakdown: {
-    description: string;
-    amount: number;
-  }[];
+  breakdown: FareBreakdownItem[];
+  distance?: number;
+  duration?: number;
+}
+
+export interface FareBreakdownItem {
+  description: string;
+  amount: number;
 }
 
 // Driver Types
@@ -63,6 +83,7 @@ export interface Driver {
   name: string;
   phone: string;
   rating: number;
+  totalRides: number;
   carDetails: {
     model: string;
     color: string;
@@ -87,13 +108,9 @@ export type BookingStatus =
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
-  error?: {
-    code: string;
-    message: string;
-  };
+  error?: ApiError;
 }
 
-// Error Types
 export interface ApiError {
   code: string;
   message: string;
@@ -110,9 +127,10 @@ export interface PaginatedResponse<T> {
 }
 
 // Search Types
-export interface LocationSearchParams {
+export interface SearchParams {
   query: string;
   limit?: number;
+  offset?: number;
 }
 
 // Filter Types
@@ -128,4 +146,30 @@ export type SortOrder = 'asc' | 'desc';
 export interface SortParams {
   field: string;
   order: SortOrder;
+}
+
+// Payment Types
+export interface PaymentMethod {
+  id: string;
+  type: 'CARD' | 'WALLET' | 'CASH';
+  title: string;
+  last4?: string;
+  expiryDate?: string;
+  isDefault?: boolean;
+}
+
+export interface PaymentRequest {
+  bookingId: string;
+  amount: number;
+  paymentMethodId: string;
+  currency: string;
+}
+
+export interface PaymentResponse {
+  id: string;
+  status: 'SUCCESS' | 'FAILED' | 'PENDING';
+  transactionId: string;
+  amount: number;
+  currency: string;
+  timestamp: string;
 }
