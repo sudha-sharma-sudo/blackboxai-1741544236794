@@ -1,23 +1,23 @@
 import React from 'react';
-import { View, Text, StyleSheet, Modal, TouchableOpacity, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
+import {
+  View,
+  Text,
+  Modal,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+} from 'react-native';
+import { theme } from '../styles/theme';
+import { FareDetails } from '../types/api';
 
-interface FareBreakdown {
-  baseFare: number;
-  distance: number;
-  ratePerKm: number;
-  tax: number;
-  discount?: number;
-  total: number;
-}
-
-interface Props {
+export interface FareDetailsModalProps {
   visible: boolean;
   onClose: () => void;
-  fareDetails: FareBreakdown;
+  fareDetails: FareDetails;
 }
 
-export const FareDetailsModal: React.FC<Props> = ({
+const FareDetailsModal: React.FC<FareDetailsModalProps> = ({
   visible,
   onClose,
   fareDetails,
@@ -29,50 +29,43 @@ export const FareDetailsModal: React.FC<Props> = ({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
+      <View style={styles.overlay}>
+        <View style={styles.container}>
           <View style={styles.header}>
             <Text style={styles.title}>Fare Breakdown</Text>
             <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-              <Icon name="close" size={24} color="#333" />
+              <Text style={styles.closeButtonText}>✕</Text>
             </TouchableOpacity>
           </View>
 
           <ScrollView style={styles.content}>
-            <View style={styles.fareItem}>
-              <Text style={styles.fareLabel}>Base Fare</Text>
-              <Text style={styles.fareValue}>${fareDetails.baseFare.toFixed(2)}</Text>
-            </View>
+            {fareDetails.breakdown.map((item, index) => (
+              <View key={index} style={styles.breakdownItem}>
+                <Text style={styles.breakdownLabel}>{item.description}</Text>
+                <Text style={styles.breakdownValue}>
+                  {fareDetails.currency} {item.amount.toFixed(2)}
+                </Text>
+              </View>
+            ))}
 
-            <View style={styles.fareItem}>
-              <Text style={styles.fareLabel}>Distance ({fareDetails.distance} km)</Text>
-              <Text style={styles.fareValue}>
-                ${(fareDetails.distance * fareDetails.ratePerKm).toFixed(2)}
+            <View style={styles.divider} />
+
+            <View style={styles.totalContainer}>
+              <Text style={styles.totalLabel}>Total Fare</Text>
+              <Text style={styles.totalValue}>
+                {fareDetails.currency} {fareDetails.total.toFixed(2)}
               </Text>
             </View>
 
-            {fareDetails.discount && (
-              <View style={styles.fareItem}>
-                <Text style={[styles.fareLabel, styles.discountText]}>Discount</Text>
-                <Text style={[styles.fareValue, styles.discountText]}>
-                  -${fareDetails.discount.toFixed(2)}
-                </Text>
-              </View>
-            )}
-
-            <View style={styles.fareItem}>
-              <Text style={styles.fareLabel}>Tax</Text>
-              <Text style={styles.fareValue}>${fareDetails.tax.toFixed(2)}</Text>
-            </View>
-
-            <View style={[styles.fareItem, styles.totalItem]}>
-              <Text style={styles.totalLabel}>Total Fare</Text>
-              <Text style={styles.totalValue}>${fareDetails.total.toFixed(2)}</Text>
+            <View style={styles.noteContainer}>
+              <Text style={styles.noteText}>
+                * Final fare may vary based on actual distance traveled and waiting time
+              </Text>
             </View>
           </ScrollView>
 
-          <TouchableOpacity style={styles.confirmButton} onPress={onClose}>
-            <Text style={styles.confirmButtonText}>Got it</Text>
+          <TouchableOpacity style={styles.closeModalButton} onPress={onClose}>
+            <Text style={styles.closeModalButtonText}>Close</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -81,80 +74,100 @@ export const FareDetailsModal: React.FC<Props> = ({
 };
 
 const styles = StyleSheet.create({
-  modalOverlay: {
+  overlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     justifyContent: 'flex-end',
   },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingTop: 20,
+  container: {
+    backgroundColor: theme.colors.background.paper,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
     maxHeight: '80%',
+    paddingBottom: Platform.OS === 'ios' ? 34 : 24,
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
-    marginBottom: 20,
+    padding: theme.spacing.lg,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
   },
   closeButton: {
-    padding: 4,
+    padding: theme.spacing.sm,
+  },
+  closeButtonText: {
+    fontSize: theme.typography.fontSize.lg,
+    color: theme.colors.text.secondary,
   },
   content: {
-    paddingHorizontal: 20,
+    padding: theme.spacing.lg,
   },
-  fareItem: {
+  breakdownItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    marginBottom: theme.spacing.md,
   },
-  fareLabel: {
-    fontSize: 16,
-    color: '#666',
+  breakdownLabel: {
+    fontSize: theme.typography.fontSize.md,
+    color: theme.colors.text.secondary,
   },
-  fareValue: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '500',
+  breakdownValue: {
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.medium,
+    color: theme.colors.text.primary,
   },
-  discountText: {
-    color: '#34C759',
+  divider: {
+    height: 1,
+    backgroundColor: theme.colors.border.light,
+    marginVertical: theme.spacing.md,
   },
-  totalItem: {
-    marginTop: 8,
-    borderBottomWidth: 0,
+  totalContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
   },
   totalLabel: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#333',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.text.primary,
   },
   totalValue: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#007AFF',
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
+    color: theme.colors.primary,
   },
-  confirmButton: {
-    backgroundColor: '#007AFF',
-    margin: 20,
-    padding: 16,
-    borderRadius: 12,
+  noteContainer: {
+    backgroundColor: `${theme.colors.warning}15`,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+  },
+  noteText: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.warning,
+    textAlign: 'center',
+  },
+  closeModalButton: {
+    marginHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.lg,
+    backgroundColor: theme.colors.primary,
+    padding: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
     alignItems: 'center',
   },
-  confirmButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
+  closeModalButtonText: {
+    color: theme.colors.text.inverse,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
 });
+
+export default FareDetailsModal;
