@@ -1,9 +1,4 @@
-declare module '*.svg' {
-  import { SvgProps } from 'react-native-svg';
-  const content: React.FC<SvgProps>;
-  export default content;
-}
-
+// Image declarations
 declare module '*.png' {
   const content: any;
   export default content;
@@ -14,40 +9,77 @@ declare module '*.jpg' {
   export default content;
 }
 
-declare module '*.json' {
+declare module '*.jpeg' {
   const content: any;
   export default content;
 }
 
-// Extend the theme type for styled-components
-import { Theme } from '../styles/theme';
-
-declare module 'styled-components/native' {
-  export interface DefaultTheme extends Theme {}
+declare module '*.gif' {
+  const content: any;
+  export default content;
 }
 
-// Extend the Window interface
+declare module '*.svg' {
+  import { SvgProps } from 'react-native-svg';
+  const content: React.FC<SvgProps>;
+  export default content;
+}
+
+// JSON declarations
+declare module '*.json' {
+  const content: { [key: string]: any };
+  export default content;
+}
+
+// Environment variables
+declare module '@env' {
+  export const API_URL: string;
+  export const GOOGLE_MAPS_API_KEY: string;
+  export const STRIPE_PUBLISHABLE_KEY: string;
+  export const APP_ENV: 'development' | 'staging' | 'production';
+}
+
+// Global type augmentations
 declare global {
+  namespace NodeJS {
+    interface ProcessEnv {
+      NODE_ENV: 'development' | 'production' | 'test';
+      API_URL: string;
+      GOOGLE_MAPS_API_KEY: string;
+      STRIPE_PUBLISHABLE_KEY: string;
+      APP_ENV: 'development' | 'staging' | 'production';
+    }
+  }
+
   interface Window {
     __DEV__: boolean;
   }
 }
 
-// Add custom properties to the process.env
-declare namespace NodeJS {
-  interface ProcessEnv {
-    NODE_ENV: 'development' | 'production' | 'test';
-    API_URL: string;
-    GOOGLE_MAPS_API_KEY: string;
+// Extend existing modules
+declare module 'react-native' {
+  interface ViewStyle {
+    elevation?: number;
   }
 }
 
-// Add custom properties to the console object
+declare module 'react-native-config' {
+  interface NativeConfig {
+    API_URL: string;
+    GOOGLE_MAPS_API_KEY: string;
+    STRIPE_PUBLISHABLE_KEY: string;
+    APP_ENV: 'development' | 'staging' | 'production';
+  }
+  const Config: NativeConfig;
+  export default Config;
+}
+
+// Extend the console object for debugging
 interface Console {
   tron: any;
 }
 
-// Add custom properties to the navigator object
+// Extend the navigator object
 interface Navigator {
   geolocation: {
     getCurrentPosition(
@@ -64,21 +96,11 @@ interface Navigator {
   };
 }
 
-// Add custom properties to the global object
-declare global {
-  namespace ReactNativePaper {
-    interface ThemeColors {
-      custom: string;
-    }
-  }
+// Extend the theme type for styled-components
+import { Theme } from '../styles/theme';
+declare module 'styled-components/native' {
+  export interface DefaultTheme extends Theme {}
 }
 
-// Add custom properties to the React Navigation theme
-declare module '@react-navigation/native' {
-  export interface Theme {
-    custom: {
-      spacing: number;
-      borderRadius: number;
-    };
-  }
-}
+// Export empty object to make this a module
+export {};
