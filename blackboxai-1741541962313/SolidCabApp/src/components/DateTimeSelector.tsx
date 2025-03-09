@@ -8,7 +8,7 @@ import {
   Platform,
   ViewStyle,
 } from 'react-native';
-import DateTimePicker, { Event } from '@react-native-community/datetimepicker';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { theme } from '../styles/theme';
 import dayjs from 'dayjs';
 
@@ -33,7 +33,7 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [tempDate, setTempDate] = useState(date);
 
-  const handleDateChange = (event: Event, selectedDate?: Date) => {
+  const handleDateChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
       setShowTimePicker(true);
@@ -49,7 +49,7 @@ const DateTimeSelector: React.FC<DateTimeSelectorProps> = ({
     }
   };
 
-  const handleTimeChange = (event: Event, selectedDate?: Date) => {
+  const handleTimeChange = (event: DateTimePickerEvent, selectedDate?: Date) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(false);
     }
